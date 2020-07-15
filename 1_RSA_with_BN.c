@@ -3,11 +3,8 @@
 #include <stdio.h>
 
 
-/*proposed exercises:
+/*
 1. implement the RSA key generation with OpenSSL Big Numbers
-2. implement the Diffie-Hellman parameters' generation  and key exchange with OpenSSL Big Numbers
-3. generate a symmetric key and use OpenSSL RSA functions to exchange it
-4. implement the enveloped data protocol (generate a symmetric key, encrypt a file, then exchange the generate key with RSA
 */
 
 
