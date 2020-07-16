@@ -18,7 +18,7 @@ function tacks on at the end. This number is around 214 characters for a 2048 bi
 */
 //3. generate a symmetric key and use OpenSSL RSA functions to exchange it
 
-#define KEY_LENGTH 2048 //Asymmetric key length
+#define KEY_LENGTH 2048 //Asymmetric key length [in bits]
 
 int main(int argc, char** argv) {
     unsigned char key[1024];
@@ -29,15 +29,15 @@ int main(int argc, char** argv) {
     RSA_generate_key_ex(keypair, KEY_LENGTH, bn_pub_exp, NULL);
 
     /*GENERATE SYMMETRIC KEYS*/
-    int key_size = EVP_CIPHER_key_length(EVP_aes_256_cbc());
+    int key_size = EVP_CIPHER_key_length(EVP_aes_256_cbc()); // 32 [Byte]
     RAND_bytes(key, key_size);
-    printf("key is: %s\n", key);
+    printf("key is: %s and has length:%d\n", key, key_size);
 
     /*ENCRYPT SYMMETRIC KEY*/
     int encrypted_data_len;
     char *encrypted_data=malloc(RSA_size(keypair));
     char* err = malloc(130);
-    if((encrypted_data_len = RSA_public_encrypt(128,(unsigned char*) key,
+    if((encrypted_data_len = RSA_public_encrypt(key_size,(unsigned char*) key,
             (unsigned char*)encrypted_data, keypair, RSA_PKCS1_OAEP_PADDING))== -1){
         ERR_load_crypto_strings();
         ERR_error_string(ERR_get_error(), err);
@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
     }
 
     FILE *out = fopen("out.bin", "w");
-    fclose(out);
     fwrite(encrypted_data, sizeof(*encrypted_data), RSA_size(keypair), out);
+    fclose(out);
 
     /************************************************************************/
 
@@ -66,7 +66,16 @@ int main(int argc, char** argv) {
 
     fclose(out);
 
+    if(CRYPTO_memcmp(key, decrypted_data, key_size)!=0){
+        printf("The original key and the decrypted one are different!\n");
+    }else{
+        printf("Same keys. Content identical.\n");
+    }
+
+    ERR_free_strings();
+
     return 0;
 }
+
 
 
